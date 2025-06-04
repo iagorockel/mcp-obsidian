@@ -253,10 +253,7 @@ class PatchContentToolHandler(ToolHandler):
                     },
                     "target": {
                         "type": "string",
-                        "description": """Target identifier:
-- For headings: Use hierarchical path with '::' separators (e.g., 'Introduction::Overview::Goals' for # Introduction > ## Overview > ### Goals)
-- For blocks: Block reference ID (e.g., '^block-id')
-- For frontmatter: Field name (e.g., 'tags' or 'title')""",
+                        "description": "Target identifier (CASE SENSITIVE - use exact heading text):\n\n- For headings: ALWAYS use full hierarchical path from H1 to target heading with '::' separators\n  Examples:\n  • H1 only: 'My Document Title'\n  • H2 under H1: 'My Document Title::Section A'\n  • H3 under H2: 'My Document Title::Section A::Subsection 1'\n  • H4 nested: 'Main::Chapter 1::Overview::Details'\n\n- For blocks: Block reference ID (e.g., '^block-id')\n- For frontmatter: Field name (e.g., 'tags' or 'title')\n\nIMPORTANT: Include exact text including spaces, hyphens, accents, and special characters.",
                     },
                     "content": {
                         "type": "string",
@@ -288,9 +285,6 @@ class PatchContentToolHandler(ToolHandler):
         operation = args.get("operation", "")
 
         if not content.endswith("\n"):
-            content += "\n"
-
-        if operation == "append" or operation == "replace":
             content += "\n"
 
         api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
