@@ -243,7 +243,7 @@ class PatchContentToolHandler(ToolHandler):
                     },
                     "operation": {
                         "type": "string",
-                        "description": "Operation to perform (append, prepend, or replace)",
+                        "description": "Operation to perform: 'append' adds after target content, 'prepend' adds before target content, 'replace' replaces ALL content under the target, but not the heading itself",
                         "enum": ["append", "prepend", "replace"],
                     },
                     "target_type": {
@@ -253,9 +253,15 @@ class PatchContentToolHandler(ToolHandler):
                     },
                     "target": {
                         "type": "string",
-                        "description": "Target identifier (heading path, block reference, or frontmatter field)",
+                        "description": """Target identifier:
+- For headings: Use hierarchical path with '::' separators (e.g., 'Introduction::Overview::Goals' for # Introduction > ## Overview > ### Goals)
+- For blocks: Block reference ID (e.g., '^block-id')
+- For frontmatter: Field name (e.g., 'tags' or 'title')""",
                     },
-                    "content": {"type": "string", "description": "Content to insert"},
+                    "content": {
+                        "type": "string",
+                        "description": "Content to insert. For 'replace' operations on headings, include complete content with any sub-headings you want to preserve.",
+                    },
                 },
                 "required": [
                     "filepath",
@@ -278,13 +284,22 @@ class PatchContentToolHandler(ToolHandler):
                 "filepath, operation, target_type, target and content arguments required"
             )
 
+        content = args.get("content", "")
+        operation = args.get("operation", "")
+
+        if not content.endswith("\n"):
+            content += "\n"
+
+        if operation == "append" or operation == "replace":
+            content += "\n"
+
         api = obsidian.Obsidian(api_key=api_key, host=obsidian_host)
         api.patch_content(
             args.get("filepath", ""),
-            args.get("operation", ""),
+            operation,
             args.get("target_type", ""),
             args.get("target", ""),
-            args.get("content", ""),
+            content,
         )
 
         return [
